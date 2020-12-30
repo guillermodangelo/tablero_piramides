@@ -26,22 +26,22 @@ locs = load_data('data/locs.csv')
 st.sidebar.subheader("Ciudad 1")
 nom_depto = list(deptos.DEPTO)
 
-nom_depto1 = st.sidebar.selectbox("Departamento", nom_depto, key=1)
+nom_depto1 = st.sidebar.selectbox("Departamento", nom_depto, key=1, index=3)
 depto1 = list(deptos.loc[deptos.DEPTO == nom_depto1, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto1, 'NOMBLOC'])
-nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2)
+nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2, index=2)
 loc1 = list(locs.loc[(locs.NOMBLOC == nom_loc1) & (locs.DPTO==depto1), 'LOCALIDAD'])[0]
 
 
 # sidebar 2
 st.sidebar.subheader("Ciudad 2")
 
-nom_depto2 = st.sidebar.selectbox("Depto.", nom_depto, key=3)
+nom_depto2 = st.sidebar.selectbox("Depto.", nom_depto, key=3, index=9)
 depto2 = list(deptos.loc[deptos.DEPTO == nom_depto2, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto2, 'NOMBLOC'])
-nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4)
+nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4, index=5)
 loc2 = list(locs.loc[(locs.NOMBLOC == nom_loc2) & (locs.DPTO==depto2), 'LOCALIDAD'])[0]
 
 
