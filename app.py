@@ -1,48 +1,41 @@
-import streamlit as st
+﻿import streamlit as st
 import pandas as pd
 import numpy as np
 import pylab as pl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-DATA_URL = (
-'data/personas_censo_2011_piramides.csv'
-)
-
-st.title("Pirámides de población")
-st.markdown("Aplicación para visualizar pirámides de población de Uruguay según "
-            "datos del Censo INE 2011 🗽💥🚗")
+st.title("Pirámides de población por localidad 🇺🇾")
+st.markdown("Aplicación para compara pirámides de población de dos localidades"
+            "de Uruguay según datos del Censo INE 2011")
 
 @st.cache(persist=True)
 def load_data(url):
     data = pd.read_csv(url)
     return data
 
-censo = load_data(DATA_URL)
-
-
-st.header("Cantidad de habitantes de las localidades")
+censo = load_data('data/personas_censo_2011_piramides.csv')
+deptos = load_data('data/deptos.csv')
+locs = load_data('data/locs.csv')
 
 
 #### sidebars #####
 
-deptos = pd.read_csv('data/deptos.csv')
-locs = pd.read_csv('data/locs.csv')
 
 # sidebar 1
-st.sidebar.subheader("Seleccione departamento y localidad para la ciudad 1")
+st.sidebar.subheader("Ciudad 1")
 nom_depto = list(deptos.DEPTO)
 
-nom_depto1 = st.sidebar.selectbox("Depto.", nom_depto, key=1)
+nom_depto1 = st.sidebar.selectbox("Departamento", nom_depto, key=1)
 depto1 = list(deptos.loc[deptos.DEPTO == nom_depto1, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto1, 'NOMBLOC'])
-nom_loc1 = st.sidebar.selectbox("Loc.", nom_loc, key=2)
+nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2)
 loc1 = list(locs.loc[(locs.NOMBLOC == nom_loc1) & (locs.DPTO==depto1), 'LOCALIDAD'])[0]
 
 
 # sidebar 2
-st.sidebar.subheader("Seleccione departamento y localidad para la ciudad 2")
+st.sidebar.subheader("Ciudad 2")
 
 nom_depto2 = st.sidebar.selectbox("Depto.", nom_depto, key=3)
 depto2 = list(deptos.loc[deptos.DEPTO == nom_depto2, 'COD'])[0]
@@ -56,13 +49,7 @@ loc2 = list(locs.loc[(locs.NOMBLOC == nom_loc2) & (locs.DPTO==depto2), 'LOCALIDA
 ciudad_1 = censo.loc[(censo.DPTO==depto1) & (censo.LOC==loc1)].copy()
 ciudad_2 = censo.loc[(censo.DPTO==depto2) & (censo.LOC==loc2)].copy()
 
-st.markdown("%s tiene %i habitantes" % (nom_loc1, ciudad_1.shape[0]))
-st.markdown("%s tiene %i habitantes" % (nom_loc2, ciudad_2.shape[0]))
-
-
 # dependencia por edad
-st.header("Tasa de dependencia por edad")
-
 def dependencia_edad(df):
     pob_dep = df.loc[(df.PERNA01 < 15) | (df.PERNA01 > 64)].count()[0]
     pob_no_dep = df.loc[(df.PERNA01 >= 15) & (df.PERNA01 <= 64)].count()[0]
@@ -71,10 +58,26 @@ def dependencia_edad(df):
 dep_c1 = round(dependencia_edad(ciudad_1), 2)
 dep_c2 = round(dependencia_edad(ciudad_2), 2)
 
-st.markdown("Tasa de dependencia por edad para %s: %s" % (nom_loc1, str(dep_c1)))
-st.markdown("Tasa de dependencia por edad para %s: %s" % (nom_loc2, str(dep_c2)))
+# masculinidad
+def masculinidad(df, redondeo=2):
+    varones = df.loc[df.PERPH02==1].count()[0]
+    mujeres = df.loc[df.PERPH02==2].count()[0]
+    ind_masc = (varones/mujeres)*100
+    return round(ind_masc, redondeo)
 
+masc_c1 =  masculinidad(ciudad_1)
+masc_c2 =  masculinidad(ciudad_2)
 
+# textos
+data1 = f"""**{nom_loc1}** tiene **{ciudad_1.shape[0]:,}** habitantes, una tasa de dependencia 
+            por edades de **{dep_c1}** y un índice de masculinidad de **{masc_c1}**."""
+               
+st.markdown(data1)
+
+data2 = f"""**{nom_loc2}** tiene **{ciudad_2.shape[0]:,}** habitantes, una tasa de dependencia 
+            por edades de **{dep_c2}** y un índice de masculinidad de **{masc_c2}**."""
+               
+st.markdown(data2)
 
 
 # tramos de edad
@@ -103,7 +106,7 @@ ciudad_2 = tramos_edad(ciudad_2)
 
 
 
-# define función para agrupar por tramos y edad
+# define funci?n para agrupar por tramos y edad
 def agrupar_df(df, col_tramo, col_sexo):
     df_group = df.groupby([col_sexo, col_tramo]).size().reset_index()
     df_group.rename(columns={col_sexo: 'sexo', 0:'personas'}, inplace=True)
@@ -119,7 +122,7 @@ ciudad_2_gr = agrupar_df(ciudad_2,'tramo', 'PERPH02')
 
 
 
-# pirámides de población
+# pirmides de poblacin
 fig, (ax1, ax2)  = plt.subplots(1,2, figsize= ( 10, 6 ), sharex= True, sharey='row')
 
 bins = [0 if i==-1 else i for i in range(-1,95,5)]
