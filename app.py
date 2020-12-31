@@ -148,11 +148,15 @@ for c, group in zip(colors, array_sexo):
 ax1.set_title(nom_loc1)
 ax2.set_title(nom_loc2)
 
+labels = ['8%', '6%','4%','2%','0','2%','4%','6%']
+
 for i in [ax1, ax2]:
     i.set_axisbelow(True)
     i.set_ylabel(None)
     i.set_xlabel(None)
+    i.set_xlim([-7.5, 7.5])
     i.axvline(linewidth=1, color='black')
+    i.set_xticklabels(labels)
     _ =[s.set_visible(False) for s in i.spines.values()]
     _ =[t.set_visible(False) for t in i.get_yticklines()]
 
