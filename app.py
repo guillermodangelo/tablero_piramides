@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 st.title("Pirámides de población por localidad 🇺🇾")
-st.markdown("Aplicación para compara pirámides de población de dos localidades"
-            "de Uruguay según datos del Censo INE 2011")
+st.markdown("Aplicación para comparar pirámides de población de dos localidades "
+            "de Uruguay según datos del Censo INE 2011. "
+            "*Desarrollada por Guillermo D'Angelo.*")
 
 @st.cache(persist=True)
 def load_data(url):
@@ -18,32 +19,30 @@ censo = load_data('data/personas_censo_2011_piramides.csv')
 deptos = load_data('data/deptos.csv')
 locs = load_data('data/locs.csv')
 
-
 #### sidebars #####
-
+st.sidebar.title('Selección de departamento y localidad')
 
 # sidebar 1
-st.sidebar.subheader("Ciudad 1")
+st.sidebar.subheader("Localidad 1")
 nom_depto = list(deptos.DEPTO)
 
 nom_depto1 = st.sidebar.selectbox("Departamento", nom_depto, key=1, index=3)
 depto1 = list(deptos.loc[deptos.DEPTO == nom_depto1, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto1, 'NOMBLOC'])
-nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2, index=2)
+nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2)
 loc1 = list(locs.loc[(locs.NOMBLOC == nom_loc1) & (locs.DPTO==depto1), 'LOCALIDAD'])[0]
 
 
 # sidebar 2
-st.sidebar.subheader("Ciudad 2")
+st.sidebar.subheader("Localidad 2")
 
 nom_depto2 = st.sidebar.selectbox("Depto.", nom_depto, key=3, index=9)
 depto2 = list(deptos.loc[deptos.DEPTO == nom_depto2, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto2, 'NOMBLOC'])
-nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4, index=5)
+nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4)
 loc2 = list(locs.loc[(locs.NOMBLOC == nom_loc2) & (locs.DPTO==depto2), 'LOCALIDAD'])[0]
-
 
 # ciudades
 ciudad_1 = censo.loc[(censo.DPTO==depto1) & (censo.LOC==loc1)].copy()
@@ -70,12 +69,12 @@ masc_c2 =  masculinidad(ciudad_2)
 
 # textos
 data1 = f"""**{nom_loc1}** tiene **{ciudad_1.shape[0]:,}** habitantes, una tasa de dependencia 
-            por edades de **{dep_c1}** y un índice de masculinidad de **{masc_c1}**."""
+            por edades de **{dep_c1}** y un índice de masculinidad de **{masc_c1}** hombres por cada 100 mujeres."""
                
 st.markdown(data1)
 
 data2 = f"""**{nom_loc2}** tiene **{ciudad_2.shape[0]:,}** habitantes, una tasa de dependencia 
-            por edades de **{dep_c2}** y un índice de masculinidad de **{masc_c2}**."""
+            por edades de **{dep_c2}** y un índice de masculinidad de **{masc_c2}** hombres por cada 100 mujeres."""
                
 st.markdown(data2)
 
@@ -106,7 +105,7 @@ ciudad_2 = tramos_edad(ciudad_2)
 
 
 
-# define funci?n para agrupar por tramos y edad
+# define función para agrupar por tramos y edad
 def agrupar_df(df, col_tramo, col_sexo):
     df_group = df.groupby([col_sexo, col_tramo]).size().reset_index()
     df_group.rename(columns={col_sexo: 'sexo', 0:'personas'}, inplace=True)
@@ -119,8 +118,6 @@ def agrupar_df(df, col_tramo, col_sexo):
 
 ciudad_1_gr = agrupar_df(ciudad_1,'tramo', 'PERPH02')
 ciudad_2_gr = agrupar_df(ciudad_2,'tramo', 'PERPH02')
-
-
 
 # pirmides de poblacin
 fig, (ax1, ax2)  = plt.subplots(1,2, figsize= ( 10, 6 ), sharex= True, sharey='row')
