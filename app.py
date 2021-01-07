@@ -15,9 +15,11 @@ def load_data(url):
     data = pd.read_csv(url)
     return data
 
-censo = load_data('data/personas_censo_2011_piramides.csv')
 deptos = load_data('data/deptos.csv')
 locs = load_data('data/locs.csv')
+data_group = load_data('data/data_group.csv')
+data_tramos = load_data('data/data_tramos_edad.csv')
+
 
 #### sidebars #####
 st.sidebar.title('Selección de departamento y localidad')
@@ -33,6 +35,7 @@ nom_loc = list(locs.loc[locs.DPTO==depto1, 'NOMBLOC'])
 nom_loc1 = st.sidebar.selectbox("Localidad", nom_loc, key=2)
 loc1 = list(locs.loc[(locs.NOMBLOC == nom_loc1) & (locs.DPTO==depto1), 'LOCALIDAD'])[0]
 
+codloc1 = int(str(depto1) + str(loc1).zfill(3))
 
 # sidebar 2
 st.sidebar.subheader("Localidad 2")
@@ -44,80 +47,43 @@ nom_loc = list(locs.loc[locs.DPTO==depto2, 'NOMBLOC'])
 nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4)
 loc2 = list(locs.loc[(locs.NOMBLOC == nom_loc2) & (locs.DPTO==depto2), 'LOCALIDAD'])[0]
 
-# ciudades
-ciudad_1 = censo.loc[(censo.DPTO==depto1) & (censo.LOC==loc1)].copy()
-ciudad_2 = censo.loc[(censo.DPTO==depto2) & (censo.LOC==loc2)].copy()
+codloc2 = int(str(depto2) + str(loc2).zfill(3))
 
-# dependencia por edad
-def dependencia_edad(df):
-    pob_dep = df.loc[(df.PERNA01 < 15) | (df.PERNA01 > 64)].count()[0]
-    pob_no_dep = df.loc[(df.PERNA01 >= 15) & (df.PERNA01 <= 64)].count()[0]
-    return (pob_dep / pob_no_dep)*100
+# extrae datos en objetos
+c1 = data_group.loc[data_group.CODLOC==codloc1]
+c2 = data_group.loc[data_group.CODLOC==codloc2]
 
-dep_c1 = round(dependencia_edad(ciudad_1), 2)
-dep_c2 = round(dependencia_edad(ciudad_2), 2)
 
-# masculinidad
-def masculinidad(df, redondeo=2):
-    varones = df.loc[df.PERPH02==1].count()[0]
-    mujeres = df.loc[df.PERPH02==2].count()[0]
-    ind_masc = (varones/mujeres)*100
-    return round(ind_masc, redondeo)
+def get_round_values(df):
+    val1 = df.poblacion.values[0]
+    val2 = df.dep_edad.values[0].round(2)
+    val3 = df.ind_masc.values[0].round(2)
+    return val1, val2, val3
 
-masc_c1 =  masculinidad(ciudad_1)
-masc_c2 =  masculinidad(ciudad_2)
+pob_c1, dep_c1, masc_c1 = get_round_values(c1)
+pob_c2, dep_c2, masc_c2 = get_round_values(c2)
+
 
 # textos
-data1 = f"""**{nom_loc1}** tiene **{ciudad_1.shape[0]:,}** habitantes, una tasa de dependencia 
+data1 = f"""**{nom_loc1}** tiene **{pob_c1}** habitantes, una tasa de dependencia 
             por edades de **{dep_c1}** y un índice de masculinidad de **{masc_c1}** hombres por cada 100 mujeres."""
                
 st.markdown(data1)
 
-data2 = f"""**{nom_loc2}** tiene **{ciudad_2.shape[0]:,}** habitantes, una tasa de dependencia 
+data2 = f"""**{nom_loc2}** tiene **{pob_c1}** habitantes, una tasa de dependencia 
             por edades de **{dep_c2}** y un índice de masculinidad de **{masc_c2}** hombres por cada 100 mujeres."""
                
 st.markdown(data2)
 
 
-# tramos de edad
-def tramos_edad(df):
-    import pandas as pd
-    import numpy as np
-    # genera lista con cortes, para reclasificar el dataframe
-    bins = [0 if i==-1 else i for i in range(-1,95,5)]
-    bins.append(120)
-    # labels
-    l1 = [str(i) if i==0 else str(i+1) for i in bins][:19]
-    l2 = [str(i) for i in bins][1:]
-    labels = ['-'.join([l1[i], l2[i]]) for i in range(19)]
-    labels.append('+95')
-    # calcula tramos de edad
-    df.loc[:, 'tramo'] = pd.cut(df['PERNA01'],
-                                bins= bins,
-                                include_lowest=True,
-                                ordered=True,
-                                labels=labels)    
+def calc_props(df):
+    df['porc_pers'] = (df.personas / df.personas.sum())*100
+    df['personas'] = np.where(df['sexo'] ==1, -df['personas'], df['personas'])
+    df['porc_pers'] = np.where(df['sexo'] ==1, -df['porc_pers'], df['porc_pers'])
     return df
 
- # calcula tramos de edad
-ciudad_1 = tramos_edad(ciudad_1)
-ciudad_2 = tramos_edad(ciudad_2)
-
-
-
-# define función para agrupar por tramos y edad
-def agrupar_df(df, col_tramo, col_sexo):
-    df_group = df.groupby([col_sexo, col_tramo]).size().reset_index()
-    df_group.rename(columns={col_sexo: 'sexo', 0:'personas'}, inplace=True)
-    df_group['porc_pers'] = (df_group.personas / df_group.personas.sum())*100
-    df_group['personas'] = np.where(df_group['sexo'] ==1, -df_group['personas'], df_group['personas'])
-    df_group['porc_pers'] = np.where(df_group['sexo'] ==1, -df_group['porc_pers'], df_group['porc_pers'])
-    df_group['sexo_label'] = np.where(df_group['sexo'] ==1, 'varones', 'mujeres')
-    df_group['tramo_label'] = df_group.tramo.astype(str)
-    return df_group
-
-ciudad_1_gr = agrupar_df(ciudad_1,'tramo', 'PERPH02')
-ciudad_2_gr = agrupar_df(ciudad_2,'tramo', 'PERPH02')
+ciudad_1_gr = calc_props(data_tramos.loc[data_tramos.CODLOC == codloc1])
+ciudad_2_gr = calc_props(data_tramos.loc[data_tramos.CODLOC == codloc2])
 
 # pirmides de poblacin
 fig, (ax1, ax2)  = plt.subplots(1,2, figsize= ( 10, 6 ), sharex= True, sharey='row')
