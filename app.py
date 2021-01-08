@@ -25,7 +25,7 @@ coords = load_data('data/coords.csv')
 
 
 #### sidebars #####
-st.sidebar.title('Selección de departamento y localidad')
+st.sidebar.title('Selección de departamento y localidad 👇')
 
 # sidebar 1
 st.sidebar.subheader("Localidad 1")
@@ -43,11 +43,11 @@ codloc1 = int(str(depto1) + str(loc1).zfill(3))
 # sidebar 2
 st.sidebar.subheader("Localidad 2")
 
-nom_depto2 = st.sidebar.selectbox("Depto.", nom_depto, key=3, index=9)
+nom_depto2 = st.sidebar.selectbox("Departamento", nom_depto, key=3, index=9)
 depto2 = list(deptos.loc[deptos.DEPTO == nom_depto2, 'COD'])[0]
 
 nom_loc = list(locs.loc[locs.DPTO==depto2, 'NOMBLOC'])
-nom_loc2 = st.sidebar.selectbox("Loc.", nom_loc, key=4)
+nom_loc2 = st.sidebar.selectbox("Localidad", nom_loc, key=4)
 loc2 = list(locs.loc[(locs.NOMBLOC == nom_loc2) & (locs.DPTO==depto2), 'LOCALIDAD'])[0]
 
 codloc2 = int(str(depto2) + str(loc2).zfill(3))
@@ -62,7 +62,7 @@ c2 = data_group.loc[data_group.CODLOC==codloc2]
 # mapita de folium
 centroide = [-32.706, -56.0284]
 
-m = folium.Map(location=centroide, zoom_start=6, width='50%', height='70%')
+m = folium.Map(location=centroide, zoom_start=6, width='100%', height='100%')
 
 coords_1 = list(coords.loc[coords.CODLOC==codloc1, ['Y', 'X']].values[0])
 coords_2 = list(coords.loc[coords.CODLOC==codloc2, ['Y', 'X']].values[0])
