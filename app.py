@@ -7,6 +7,10 @@ import pylab as pl
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+icon = 'data/flag.png'
+
+st.set_page_config(page_title='Pirámides', page_icon = icon)
+
 st.title("Pirámides de población por localidad 🇺🇾")
 st.markdown("Aplicación para comparar pirámides de población de dos localidades "
             "de Uruguay según datos del Censo INE 2011. "
