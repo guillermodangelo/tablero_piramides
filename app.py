@@ -1,4 +1,6 @@
 ﻿import streamlit as st
+from streamlit_folium import folium_static
+import folium
 import pandas as pd
 import numpy as np
 import pylab as pl
@@ -19,6 +21,7 @@ deptos = load_data('data/deptos.csv')
 locs = load_data('data/locs.csv')
 data_group = load_data('data/data_group.csv')
 data_tramos = load_data('data/data_tramos_edad.csv')
+coords = load_data('data/coords.csv')
 
 
 #### sidebars #####
@@ -54,6 +57,24 @@ c1 = data_group.loc[data_group.CODLOC==codloc1]
 c2 = data_group.loc[data_group.CODLOC==codloc2]
 
 
+
+
+# mapita de folium
+centroide = [-32.706, -56.0284]
+
+m = folium.Map(location=centroide, zoom_start=6, width='50%', height='70%')
+
+coords_1 = list(coords.loc[coords.CODLOC==codloc1, ['Y', 'X']].values[0])
+coords_2 = list(coords.loc[coords.CODLOC==codloc2, ['Y', 'X']].values[0])
+
+# add marker for Liberty Bell
+folium.Marker(coords_1, popup=nom_loc1, tooltip=nom_loc1).add_to(m)
+folium.Marker(coords_2, popup=nom_loc2, tooltip=nom_loc2).add_to(m)
+
+# call to render Folium map in Streamlit
+folium_static(m)
+
+# texto
 def get_round_values(df):
     val1 = df.poblacion.values[0]
     val2 = df.dep_edad.values[0].round(2)
@@ -62,7 +83,6 @@ def get_round_values(df):
 
 pob_c1, dep_c1, masc_c1 = get_round_values(c1)
 pob_c2, dep_c2, masc_c2 = get_round_values(c2)
-
 
 # textos
 data1 = f"""**{nom_loc1}** tiene **{pob_c1}** habitantes, una tasa de dependencia 
