@@ -62,7 +62,8 @@ c2 = data_group.loc[data_group.CODLOC==codloc2]
 # mapita de folium
 centroide = [-32.706, -56.0284]
 
-m = folium.Map(location=centroide, zoom_start=6, width='100%', height='100%')
+m = folium.Map(location=centroide, zoom_start=6, tiles='OpenStreetMap',
+               width='100%', height='100%', left='0%', top='0%')
 
 coords_1 = list(coords.loc[coords.CODLOC==codloc1, ['Y', 'X']].values[0])
 coords_2 = list(coords.loc[coords.CODLOC==codloc2, ['Y', 'X']].values[0])
@@ -131,8 +132,8 @@ for c, group in zip(colors, array_sexo):
     sns.barplot(x='porc_pers', y='tramo_label', data=ciudad_2_gr.loc[ciudad_2_gr[group_col]==group, :],
                 order = order_of_bars, color=c, label=group, ax=ax2)
 
-ax1.set_title(nom_loc1)
-ax2.set_title(nom_loc2)
+ax1.set_title(nom_loc1, pad=20)
+ax2.set_title(nom_loc2, pad=20)
 
 labels = ['8%', '6%','4%','2%','0','2%','4%','6%']
 
