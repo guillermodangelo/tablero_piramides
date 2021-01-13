@@ -6,6 +6,7 @@ import numpy as np
 import pylab as pl
 import matplotlib.pyplot as plt
 import seaborn as sns
+import base64
 
 icon = 'data/flag.png'
 
@@ -160,3 +161,32 @@ ax1.text(3, 0.5, 'Mujeres',
         color='green', fontsize=10)
 
 st.pyplot(fig)
+
+
+data_1_download = ciudad_1_gr.drop(['sexo', 'tramo'], axis=1)
+data_1_download.personas = abs(data_1_download.personas)
+data_1_download.porc_pers = abs(data_1_download.porc_pers)
+
+data_2_download = ciudad_2_gr.drop(['sexo', 'tramo'], axis=1)
+data_2_download.personas = abs(data_2_download.personas)
+data_2_download.porc_pers = abs(data_2_download.porc_pers)
+
+
+# descarga de datos
+# https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
+def filedownload(df, name, text):
+    csv = df.to_csv(index=False, decimal=',')
+    b64 = base64.b64encode(csv.encode()).decode()  # strings <-> bytes conversions
+    href = f'<a href="data:file/csv;base64,{b64}" download={name}>{text}</a>'
+    return href
+
+name_1 = 'data_1_{}_{}.csv'.format(nom_loc1.lower(), nom_depto1.lower()).replace(" ", "_")
+name_2 = 'data_2_{}_{}.csv'.format(nom_loc2.lower(), nom_depto2.lower()).replace(" ", "_")
+
+download_text_1 = 'Descargar datos de {}'.format(nom_loc1.title())
+download_text_2 = 'Descargar datos de {}'.format(nom_loc2.title())
+
+st.markdown(filedownload(data_1_download, name_1, download_text_1), unsafe_allow_html=True)
+st.markdown(filedownload(data_2_download, name_2, download_text_2), unsafe_allow_html=True)
+
+
