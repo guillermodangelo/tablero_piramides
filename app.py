@@ -96,7 +96,7 @@ data1 = f"""**{nom_loc1}** tiene **{pob_c1}** habitantes, una tasa de dependenci
                
 st.markdown(data1)
 
-data2 = f"""**{nom_loc2}** tiene **{pob_c1}** habitantes, una tasa de dependencia 
+data2 = f"""**{nom_loc2}** tiene **{pob_c2}** habitantes, una tasa de dependencia 
             por edades de **{dep_c2}** y un índice de masculinidad de **{masc_c2}** hombres por cada 100 mujeres."""
                
 st.markdown(data2)
